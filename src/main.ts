@@ -13,7 +13,8 @@ async function bootstrap() {
         'http://localhost:3000',
         'http://localhost:3001',
       ].filter(Boolean)
-      if (!origin || allowed.includes(origin)) {
+      // Allow all vercel.app subdomains
+      if (!origin || allowed.includes(origin) || origin.endsWith('.vercel.app')) {
         callback(null, true)
       } else {
         callback(new Error('Not allowed by CORS'))
