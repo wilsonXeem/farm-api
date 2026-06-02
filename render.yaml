@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: pffms-api
+    env: node
+    region: frankfurt
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: PORT
+        value: 3001
+      - key: FRONTEND_URL
+        sync: false
+      - key: NODE_ENV
+        value: production
