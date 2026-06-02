@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  FARM_MANAGER
+  ACCOUNTANT
+  SALES
+  STAFF
+}
+
+enum PaymentStatus {
+  PAID
+  UNPAID
+  PART_PAYMENT
+}
+
+enum ExpenseCategory {
+  FUEL
+  CONSTRUCTION
+  SALARY
+  MEDICATION
+  REPAIRS
+  TRANSPORT
+  ELECTRICITY
+  WATER
+  MISCELLANEOUS
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(STAFF)
+  farmId    String?
+  farm      Farm?    @relation(fields: [farmId], references: [id])
+  workerId  String?  @unique
+  worker    Worker?  @relation(fields: [workerId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Farm {
+  id         String       @id @default(uuid())
+  name       String
+  location   String?
+  totalBirds Int          @default(500)
+  createdAt  DateTime     @default(now())
+  users      User[]
+  pens       Pen[]
+  production Production[]
+  mortality  Mortality[]
+  inventory  Inventory[]
+  feed       Feed[]
+  expenses   Expense[]
+  sales      Sale[]
+  workers    Worker[]
+  payroll    Payroll[]
+}
+
+model Pen {
+  id         String       @id @default(uuid())
+  name       String
+  totalBirds Int          @default(100)
+  farmId     String
+  farm       Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  workerId   String?
+  worker     Worker?      @relation(fields: [workerId], references: [id])
+  production Production[]
+  mortality  Mortality[]
+  createdAt  DateTime     @default(now())
+}
+
+model Production {
+  id          String   @id @default(uuid())
+  date        DateTime
+  totalEggs   Int
+  crackedEggs Int      @default(0)
+  spoiltEggs  Int      @default(0)
+  goodEggs    Int
+  notes       String?
+  farmId      String
+  farm        Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  penId       String?
+  pen         Pen?     @relation(fields: [penId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model Mortality {
+  id        String   @id @default(uuid())
+  date      DateTime
+  count     Int
+  cause     String?
+  notes     String?
+  farmId    String
+  farm      Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  penId     String?
+  pen       Pen?     @relation(fields: [penId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Inventory {
+  id        String   @id @default(uuid())
+  item      String
+  qty       Float
+  unit      String
+  unitPrice Float
+  minQty    Float    @default(0)
+  supplier  String?
+  farmId    String
+  farm      Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Feed {
+  id        String   @id @default(uuid())
+  date      DateTime
+  item      String
+  qty       Float
+  unitPrice Float
+  totalCost Float
+  supplier  String?
+  farmId    String
+  farm      Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Expense {
+  id          String          @id @default(uuid())
+  date        DateTime
+  category    ExpenseCategory
+  amount      Float
+  description String?
+  receipt     String?
+  farmId      String
+  farm        Farm            @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  createdAt   DateTime        @default(now())
+}
+
+model Sale {
+  id            String        @id @default(uuid())
+  date          DateTime
+  customer      String?
+  crates        Float
+  pricePerCrate Float
+  total         Float
+  status        PaymentStatus @default(PAID)
+  farmId        String
+  farm          Farm          @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  createdAt     DateTime      @default(now())
+}
+
+model Worker {
+  id           String    @id @default(uuid())
+  name         String
+  role         String
+  salary       Float
+  phone        String?
+  employedDate DateTime
+  farmId       String
+  farm         Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  pens         Pen[]
+  payroll      Payroll[]
+  user         User?
+  createdAt    DateTime  @default(now())
+}
+
+model Payroll {
+  id        String   @id @default(uuid())
+  workerId  String
+  worker    Worker   @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  amount    Float
+  month     String
+  date      DateTime
+  farmId    String
+  farm      Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}

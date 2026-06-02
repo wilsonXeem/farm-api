@@ -1,0 +1,15 @@
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common'
+import { InventoryService } from './inventory.service'
+import { CreateInventoryDto, UpdateInventoryDto } from './inventory.dto'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
+
+@Controller('inventory')
+@UseGuards(JwtAuthGuard)
+export class InventoryController {
+  constructor(private svc: InventoryService) {}
+
+  @Post() create(@Body() dto: CreateInventoryDto) { return this.svc.create(dto) }
+  @Get() findAll(@Query('farmId') farmId: string) { return this.svc.findAll(farmId) }
+  @Patch(':id') update(@Param('id') id: string, @Body() dto: UpdateInventoryDto) { return this.svc.update(id, dto) }
+  @Delete(':id') remove(@Param('id') id: string) { return this.svc.remove(id) }
+}
