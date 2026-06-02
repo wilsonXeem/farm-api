@@ -1,5 +1,16 @@
 import { IsString, IsNumber, IsOptional, IsEnum, Min } from 'class-validator'
-import { ExpenseCategory } from '@prisma/client'
+
+export enum ExpenseCategory {
+  FUEL = 'FUEL',
+  CONSTRUCTION = 'CONSTRUCTION',
+  SALARY = 'SALARY',
+  MEDICATION = 'MEDICATION',
+  REPAIRS = 'REPAIRS',
+  TRANSPORT = 'TRANSPORT',
+  ELECTRICITY = 'ELECTRICITY',
+  WATER = 'WATER',
+  MISCELLANEOUS = 'MISCELLANEOUS',
+}
 
 export class CreateExpenseDto {
   @IsString() date: string

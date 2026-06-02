@@ -1,5 +1,10 @@
 import { IsString, IsNumber, IsOptional, IsEnum, Min } from 'class-validator'
-import { PaymentStatus } from '@prisma/client'
+
+export enum PaymentStatus {
+  PAID = 'PAID',
+  UNPAID = 'UNPAID',
+  PART_PAYMENT = 'PART_PAYMENT',
+}
 
 export class CreateSaleDto {
   @IsString() date: string
