@@ -50,6 +50,9 @@ model Farm {
   name       String
   location   String?
   totalBirds Int          @default(500)
+  priceJumbo Float        @default(0)
+  priceMedium Float       @default(0)
+  priceTable Float        @default(0)
   createdAt  DateTime     @default(now())
   users      User[]
   pens       Pen[]
@@ -59,6 +62,7 @@ model Farm {
   feed       Feed[]
   expenses   Expense[]
   sales      Sale[]
+  otherSales OtherSale[]
   workers    Worker[]
   payroll    Payroll[]
 }
@@ -73,6 +77,7 @@ model Pen {
   worker     Worker?      @relation(fields: [workerId], references: [id])
   production Production[]
   mortality  Mortality[]
+  otherSales OtherSale[]
   createdAt  DateTime     @default(now())
 }
 
@@ -142,10 +147,17 @@ model Expense {
   createdAt   DateTime        @default(now())
 }
 
+enum EggSize {
+  JUMBO
+  MEDIUM
+  TABLE
+}
+
 model Sale {
   id            String        @id @default(uuid())
   date          DateTime
   customer      String?
+  size          EggSize       @default(TABLE)
   crates        Float
   pricePerCrate Float
   total         Float
@@ -153,6 +165,23 @@ model Sale {
   farmId        String
   farm          Farm          @relation(fields: [farmId], references: [id], onDelete: Cascade)
   createdAt     DateTime      @default(now())
+}
+
+model OtherSale {
+  id        String        @id @default(uuid())
+  date      DateTime
+  item      String
+  qty       Float
+  unit      String
+  unitPrice Float
+  total     Float
+  customer  String?
+  status    PaymentStatus @default(PAID)
+  penId     String?
+  pen       Pen?          @relation(fields: [penId], references: [id])
+  farmId    String
+  farm      Farm          @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
 }
 
 model Worker {

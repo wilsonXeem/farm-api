@@ -1,13 +1,19 @@
-import { IsString, IsOptional, IsInt, Min } from 'class-validator'
+import { IsString, IsInt, IsOptional, IsNumber, Min } from 'class-validator'
 
 export class CreateFarmDto {
   @IsString() name: string
   @IsString() @IsOptional() location?: string
   @IsInt() @Min(1) @IsOptional() totalBirds?: number
+  @IsNumber() @IsOptional() priceJumbo?: number
+  @IsNumber() @IsOptional() priceMedium?: number
+  @IsNumber() @IsOptional() priceTable?: number
 }
 
 export class UpdateFarmDto {
   @IsString() @IsOptional() name?: string
   @IsString() @IsOptional() location?: string
   @IsInt() @Min(1) @IsOptional() totalBirds?: number
+  @IsNumber() @IsOptional() priceJumbo?: number
+  @IsNumber() @IsOptional() priceMedium?: number
+  @IsNumber() @IsOptional() priceTable?: number
 }
