@@ -16,3 +16,11 @@ export class UpdateInventoryDto {
   @IsNumber() @Min(0) @IsOptional() minQty?: number
   @IsString() @IsOptional() supplier?: string
 }
+
+export class StockMovementDto {
+  @IsString() inventoryId: string
+  @IsNumber() @Min(0.01) qty: number
+  @IsString() date: string
+  @IsString() @IsOptional() reason?: string
+  @IsString() farmId: string
+}

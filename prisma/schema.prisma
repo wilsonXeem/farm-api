@@ -60,6 +60,7 @@ model Farm {
   mortality  Mortality[]
   inventory  Inventory[]
   feed       Feed[]
+  stockMovements StockMovement[]
   expenses   Expense[]
   sales      Sale[]
   otherSales OtherSale[]
@@ -110,16 +111,35 @@ model Mortality {
 }
 
 model Inventory {
-  id        String   @id @default(uuid())
-  item      String
-  qty       Float
-  unit      String
-  unitPrice Float
-  minQty    Float    @default(0)
-  supplier  String?
-  farmId    String
-  farm      Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  id             String           @id @default(uuid())
+  item           String
+  qty            Float
+  unit           String
+  unitPrice      Float
+  minQty         Float            @default(0)
+  supplier       String?
+  farmId         String
+  farm           Farm             @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  movements      StockMovement[]
+  createdAt      DateTime         @default(now())
+}
+
+enum MovementType {
+  IN
+  OUT
+}
+
+model StockMovement {
+  id          String        @id @default(uuid())
+  date        DateTime
+  type        MovementType
+  qty         Float
+  reason      String?
+  inventoryId String
+  inventory   Inventory     @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  farmId      String
+  farm        Farm          @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  createdAt   DateTime      @default(now())
 }
 
 model Feed {
