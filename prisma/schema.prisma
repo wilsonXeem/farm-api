@@ -61,6 +61,12 @@ model Farm {
   inventory  Inventory[]
   feed       Feed[]
   stockMovements StockMovement[]
+  stock      Stock[]
+  stockBatches StockBatch[]
+  stockOuts  StockOut[]
+  feedFormulas FeedFormula[]
+  feedBatches  FeedBatch[]
+  feedUsages   FeedUsage[]
   expenses   Expense[]
   sales      Sale[]
   otherSales OtherSale[]
@@ -79,6 +85,8 @@ model Pen {
   production Production[]
   mortality  Mortality[]
   otherSales OtherSale[]
+  stockOuts  StockOut[]
+  feedUsages FeedUsage[]
   createdAt  DateTime     @default(now())
 }
 
@@ -142,6 +150,61 @@ model StockMovement {
   createdAt   DateTime      @default(now())
 }
 
+enum StockCategory {
+  FEED
+  MEDICATION
+  EQUIPMENT
+  SUPPLIES
+  OTHER
+}
+
+model Stock {
+  id        String         @id @default(uuid())
+  name      String
+  category  StockCategory  @default(FEED)
+  unit      String
+  minQty    Float          @default(0)
+  supplier  String?
+  farmId    String
+  farm      Farm           @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  batches   StockBatch[]
+  stockOuts StockOut[]
+  formulaIngredients FeedFormulaIngredient[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model StockBatch {
+  id           String    @id @default(uuid())
+  date         DateTime
+  qty          Float
+  remainingQty Float
+  unitPrice    Float
+  totalCost    Float
+  supplier     String?
+  notes        String?
+  stockId      String
+  stock        Stock     @relation(fields: [stockId], references: [id], onDelete: Cascade)
+  farmId       String
+  farm         Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+}
+
+model StockOut {
+  id        String    @id @default(uuid())
+  date      DateTime
+  qty       Float
+  costUsed  Float     @default(0)
+  reason    String?
+  stockId   String
+  stock     Stock     @relation(fields: [stockId], references: [id], onDelete: Cascade)
+  penId     String?
+  pen       Pen?      @relation(fields: [penId], references: [id])
+  farmId    String
+  farm      Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+}
+
 model Feed {
   id        String   @id @default(uuid())
   date      DateTime
@@ -202,6 +265,58 @@ model OtherSale {
   farmId    String
   farm      Farm          @relation(fields: [farmId], references: [id], onDelete: Cascade)
   createdAt DateTime      @default(now())
+}
+
+model FeedFormula {
+  id          String                  @id @default(uuid())
+  name        String
+  description String?
+  unit        String                  @default("bags")
+  farmId      String
+  farm        Farm                    @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  ingredients FeedFormulaIngredient[]
+  batches     FeedBatch[]
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+}
+
+model FeedFormulaIngredient {
+  id         String      @id @default(uuid())
+  formulaId  String
+  formula    FeedFormula @relation(fields: [formulaId], references: [id], onDelete: Cascade)
+  stockId    String
+  stock      Stock       @relation(fields: [stockId], references: [id], onDelete: Cascade)
+  qtyPerUnit Float
+  createdAt  DateTime    @default(now())
+}
+
+model FeedBatch {
+  id           String      @id @default(uuid())
+  date         DateTime
+  batchNo      String
+  formulaId    String
+  formula      FeedFormula @relation(fields: [formulaId], references: [id], onDelete: Cascade)
+  qtyProduced  Float
+  qtyRemaining Float
+  notes        String?
+  farmId       String
+  farm         Farm        @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  usages       FeedUsage[]
+  createdAt    DateTime    @default(now())
+}
+
+model FeedUsage {
+  id        String    @id @default(uuid())
+  date      DateTime
+  batchId   String
+  batch     FeedBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  penId     String?
+  pen       Pen?      @relation(fields: [penId], references: [id])
+  qty       Float
+  notes     String?
+  farmId    String
+  farm      Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
 }
 
 model Worker {

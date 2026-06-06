@@ -16,6 +16,8 @@ import { AnalyticsModule } from './modules/analytics/analytics.module'
 import { ReportsModule } from './modules/reports/reports.module'
 import { PensModule } from './modules/pens/pens.module'
 import { OtherSalesModule } from './modules/other-sales/other-sales.module'
+import { StockModule } from './modules/stock/stock.module'
+import { FeedFormulaModule } from './modules/feed-formula/feed-formula.module'
 
 @Module({
   imports: [
@@ -36,6 +38,8 @@ import { OtherSalesModule } from './modules/other-sales/other-sales.module'
     ReportsModule,
     PensModule,
     OtherSalesModule,
+    StockModule,
+    FeedFormulaModule,
   ],
 })
 export class AppModule {}
