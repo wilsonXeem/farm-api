@@ -4,8 +4,8 @@ services:
     env: node
     region: frankfurt
     plan: free
-    buildCommand: npm install && node_modules/.bin/prisma generate && npm run build
-    startCommand: npm run start:prod
+    buildCommand: npm install && node_modules/.bin/prisma generate && node --max-old-space-size=512 node_modules/.bin/nest build
+    startCommand: npm run start
     envVars:
       - key: DATABASE_URL
         sync: false
