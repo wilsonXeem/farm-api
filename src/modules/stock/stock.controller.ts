@@ -10,7 +10,6 @@ export class StockController {
 
   @Post() create(@Body() dto: CreateStockDto) { return this.svc.create(dto) }
   @Get() findAll(@Query('farmId') farmId: string) { return this.svc.findAll(farmId) }
-  @Delete(':id') remove(@Param('id') id: string) { return this.svc.remove(id) }
 
   @Post('in') stockIn(@Body() dto: StockInDto) { return this.svc.stockIn(dto) }
   @Post('out') stockOut(@Body() dto: StockOutDto) { return this.svc.stockOut(dto) }
@@ -18,6 +17,8 @@ export class StockController {
   @Get('movements') getMovements(@Query('farmId') farmId: string, @Query('stockId') stockId?: string) {
     return this.svc.getMovements(farmId, stockId)
   }
-  @Get(':id/batches') getBatches(@Param('id') id: string) { return this.svc.getBatches(id) }
   @Get('feed-cost') getFeedCost(@Query('farmId') farmId: string) { return this.svc.getTotalFeedCost(farmId) }
+
+  @Get(':id/batches') getBatches(@Param('id') id: string) { return this.svc.getBatches(id) }
+  @Delete(':id') remove(@Param('id') id: string) { return this.svc.remove(id) }
 }
