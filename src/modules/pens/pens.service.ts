@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../prisma/prisma.service'
-import { CreatePenDto, UpdatePenDto } from './pens.dto'
+import { CreatePenDto, UpdatePenDto, AddBirdsDto } from './pens.dto'
 
 @Injectable()
 export class PensService {
@@ -45,5 +45,36 @@ export class PensService {
     const pen = await this.prisma.pen.findUnique({ where: { id } })
     if (!pen) throw new NotFoundException('Pen not found')
     return this.prisma.pen.delete({ where: { id } })
+  }
+
+  // ── Bird entries ──────────────────────────────────────────────
+  async addBirds(penId: string, dto: AddBirdsDto) {
+    const pen = await this.prisma.pen.findUnique({ where: { id: penId } })
+    if (!pen) throw new NotFoundException('Pen not found')
+    const [entry] = await this.prisma.$transaction([
+      this.prisma.birdEntry.create({
+        data: { date: new Date(dto.date), count: dto.count, notes: dto.notes, penId, farmId: dto.farmId },
+      }),
+      this.prisma.pen.update({
+        where: { id: penId },
+        data: { totalBirds: { increment: dto.count } },
+      }),
+    ])
+    return entry
+  }
+
+  getBirdEntries(penId: string) {
+    return this.prisma.birdEntry.findMany({
+      where: { penId },
+      orderBy: { date: 'desc' },
+    })
+  }
+
+  getAllBirdEntries(farmId: string) {
+    return this.prisma.birdEntry.findMany({
+      where: { farmId },
+      include: { pen: { select: { name: true } } },
+      orderBy: { date: 'desc' },
+    })
   }
 }

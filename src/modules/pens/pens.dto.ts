@@ -12,3 +12,10 @@ export class UpdatePenDto {
   @IsInt() @Min(1) @IsOptional() totalBirds?: number
   @IsString() @IsOptional() workerId?: string
 }
+
+export class AddBirdsDto {
+  @IsString() date: string
+  @IsInt() @Min(1) count: number
+  @IsString() farmId: string
+  @IsString() @IsOptional() notes?: string
+}

@@ -1,0 +1,14 @@
+CREATE TABLE "BirdEntry" (
+    "id" TEXT NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "count" INTEGER NOT NULL,
+    "notes" TEXT,
+    "penId" TEXT NOT NULL,
+    "farmId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "BirdEntry_pkey" PRIMARY KEY ("id")
+);
+
+ALTER TABLE "BirdEntry" ADD CONSTRAINT "BirdEntry_penId_fkey" FOREIGN KEY ("penId") REFERENCES "Pen"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "BirdEntry" ADD CONSTRAINT "BirdEntry_farmId_fkey" FOREIGN KEY ("farmId") REFERENCES "Farm"("id") ON DELETE CASCADE ON UPDATE CASCADE;

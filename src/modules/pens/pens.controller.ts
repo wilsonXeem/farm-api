@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common'
 import { PensService } from './pens.service'
-import { CreatePenDto, UpdatePenDto } from './pens.dto'
+import { CreatePenDto, UpdatePenDto, AddBirdsDto } from './pens.dto'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { CurrentUser } from '../../common/decorators'
 
@@ -15,6 +15,18 @@ export class PensController {
   findAll(@Query('farmId') farmId: string, @CurrentUser() user: any) {
     if (user.role === 'STAFF' && user.workerId) return this.svc.findByWorker(user.workerId)
     return this.svc.findAll(farmId)
+  }
+
+  @Get('bird-entries') getAllBirdEntries(@Query('farmId') farmId: string) {
+    return this.svc.getAllBirdEntries(farmId)
+  }
+
+  @Post(':id/birds') addBirds(@Param('id') id: string, @Body() dto: AddBirdsDto) {
+    return this.svc.addBirds(id, dto)
+  }
+
+  @Get(':id/birds') getBirdEntries(@Param('id') id: string) {
+    return this.svc.getBirdEntries(id)
   }
 
   @Patch(':id') update(@Param('id') id: string, @Body() dto: UpdatePenDto) { return this.svc.update(id, dto) }

@@ -72,6 +72,7 @@ model Farm {
   otherSales OtherSale[]
   workers    Worker[]
   payroll    Payroll[]
+  birdEntries BirdEntry[]
 }
 
 model Pen {
@@ -84,10 +85,23 @@ model Pen {
   worker     Worker?      @relation(fields: [workerId], references: [id])
   production Production[]
   mortality  Mortality[]
+  birdEntries BirdEntry[]
   otherSales OtherSale[]
   stockOuts  StockOut[]
   feedUsages FeedUsage[]
   createdAt  DateTime     @default(now())
+}
+
+model BirdEntry {
+  id        String   @id @default(uuid())
+  date      DateTime
+  count     Int
+  notes     String?
+  penId     String
+  pen       Pen      @relation(fields: [penId], references: [id], onDelete: Cascade)
+  farmId    String
+  farm      Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
 
 model Production {
