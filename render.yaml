@@ -4,7 +4,7 @@ services:
     env: node
     region: frankfurt
     plan: free
-    buildCommand: npm install && node --max-old-space-size=512 node_modules/.bin/nest build
+    buildCommand: npm install
     startCommand: npm run start
     envVars:
       - key: DATABASE_URL
