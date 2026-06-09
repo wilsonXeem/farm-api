@@ -75,6 +75,7 @@ export class FeedFormulaService {
     // Deduct ingredients from stock (FIFO) for each ingredient
     for (const ing of formula.ingredients) {
       let remaining = ing.qtyPerUnit * dto.qtyProduced
+      let totalCostUsed = 0
       const batches = await this.prisma.stockBatch.findMany({
         where: { stockId: ing.stockId, remainingQty: { gt: 0 } },
         orderBy: { date: 'asc' },
@@ -82,6 +83,7 @@ export class FeedFormulaService {
       for (const batch of batches) {
         if (remaining <= 0) break
         const deduct = Math.min(remaining, batch.remainingQty)
+        totalCostUsed += deduct * batch.unitPrice
         remaining -= deduct
         await this.prisma.stockBatch.update({
           where: { id: batch.id },
@@ -94,7 +96,7 @@ export class FeedFormulaService {
           id: randomUUID(),
           date: new Date(dto.date),
           qty: ing.qtyPerUnit * dto.qtyProduced,
-          costUsed: 0,
+          costUsed: totalCostUsed,
           reason: `Feed production — ${formula.name} batch ${dto.batchNo}`,
           stockId: ing.stockId,
           farmId: dto.farmId,

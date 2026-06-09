@@ -337,6 +337,7 @@ model Worker {
   id           String    @id @default(uuid())
   name         String
   role         String
+  type         String    @default("Permanent")
   salary       Float
   phone        String?
   employedDate DateTime
