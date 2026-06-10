@@ -3,7 +3,11 @@ import { Type } from 'class-transformer'
 
 export class IngredientDto {
   @IsString() stockId: string
-  @IsNumber() @Min(0.001) qtyPerUnit: number
+}
+
+export class BatchIngredientDto {
+  @IsString() stockId: string
+  @IsNumber() @Min(0.001) qty: number
 }
 
 export class CreateFormulaDto {
@@ -19,6 +23,7 @@ export class ProduceBatchDto {
   @IsString() date: string
   @IsString() batchNo: string
   @IsNumber() @Min(0.01) qtyProduced: number
+  @IsArray() @ValidateNested({ each: true }) @Type(() => BatchIngredientDto) ingredients: BatchIngredientDto[]
   @IsString() @IsOptional() notes?: string
   @IsString() farmId: string
 }

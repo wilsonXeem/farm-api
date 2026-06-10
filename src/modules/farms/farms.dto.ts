@@ -16,4 +16,7 @@ export class UpdateFarmDto {
   @IsNumber() @IsOptional() priceJumbo?: number
   @IsNumber() @IsOptional() priceMedium?: number
   @IsNumber() @IsOptional() priceTable?: number
+  @IsString() @IsOptional() bankName?: string
+  @IsString() @IsOptional() bankAccount?: string
+  @IsString() @IsOptional() bankAccountName?: string
 }

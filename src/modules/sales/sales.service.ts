@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../prisma/prisma.service'
-import { CreateSaleDto } from './sales.dto'
+import { CreateSaleDto, UpdateSaleStatusDto } from './sales.dto'
 
 @Injectable()
 export class SalesService {
@@ -12,6 +12,12 @@ export class SalesService {
 
   findAll(farmId: string) {
     return this.prisma.sale.findMany({ where: { farmId }, orderBy: { date: 'desc' } })
+  }
+
+  async updateStatus(id: string, dto: UpdateSaleStatusDto) {
+    const rec = await this.prisma.sale.findUnique({ where: { id } })
+    if (!rec) throw new NotFoundException()
+    return this.prisma.sale.update({ where: { id }, data: { status: dto.status } })
   }
 
   async remove(id: string) {

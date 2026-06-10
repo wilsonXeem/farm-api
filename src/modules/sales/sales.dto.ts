@@ -22,3 +22,7 @@ export class CreateSaleDto {
   @IsEnum(PaymentStatus) @IsOptional() status?: PaymentStatus
   @IsString() farmId: string
 }
+
+export class UpdateSaleStatusDto {
+  @IsEnum(PaymentStatus) status: PaymentStatus
+}

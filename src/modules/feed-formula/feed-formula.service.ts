@@ -10,7 +10,7 @@ export class FeedFormulaService {
   // ── Formulas ─────────────────────────────────────────────────
 
   async createFormula(dto: CreateFormulaDto) {
-    const formula = await this.prisma.feedFormula.create({
+    return this.prisma.feedFormula.create({
       data: {
         id: randomUUID(),
         name: dto.name,
@@ -21,7 +21,6 @@ export class FeedFormulaService {
           create: dto.ingredients.map(i => ({
             id: randomUUID(),
             stockId: i.stockId,
-            qtyPerUnit: i.qtyPerUnit,
           })),
         },
       },
@@ -29,7 +28,6 @@ export class FeedFormulaService {
         ingredients: { include: { stock: { select: { name: true, unit: true } } } },
       },
     })
-    return formula
   }
 
   findAllFormulas(farmId: string) {
@@ -58,28 +56,33 @@ export class FeedFormulaService {
     })
     if (!formula) throw new NotFoundException('Formula not found')
 
-    // Check all ingredients have enough stock (FIFO)
-    for (const ing of formula.ingredients) {
-      const batches = await this.prisma.stockBatch.findMany({
-        where: { stockId: ing.stockId, remainingQty: { gt: 0 } },
-      })
-      const available = batches.reduce((s, b) => s + b.remainingQty, 0)
-      const needed = ing.qtyPerUnit * dto.qtyProduced
-      if (available < needed) {
-        throw new BadRequestException(
-          `Not enough ${ing.stock.name}: need ${needed} ${ing.stock.unit}, only ${available.toFixed(2)} available`
-        )
+    // Validate all ingredients are in the formula
+    const formulaStockIds = new Set(formula.ingredients.map(i => i.stockId))
+    for (const ing of dto.ingredients) {
+      if (!formulaStockIds.has(ing.stockId)) {
+        throw new BadRequestException(`Stock item not part of this formula`)
       }
     }
 
-    // Deduct ingredients from stock (FIFO) for each ingredient
-    for (const ing of formula.ingredients) {
-      let remaining = ing.qtyPerUnit * dto.qtyProduced
-      let totalCostUsed = 0
+    // Check stock availability and deduct FIFO for each ingredient
+    const batchIngredientData: { stockId: string; qty: number; costUsed: number }[] = []
+
+    for (const ing of dto.ingredients) {
+      const stock = formula.ingredients.find(i => i.stockId === ing.stockId)!.stock
       const batches = await this.prisma.stockBatch.findMany({
         where: { stockId: ing.stockId, remainingQty: { gt: 0 } },
         orderBy: { date: 'asc' },
       })
+      const available = batches.reduce((s, b) => s + b.remainingQty, 0)
+      if (available < ing.qty) {
+        throw new BadRequestException(
+          `Not enough ${stock.name}: need ${ing.qty} ${stock.unit}, only ${available.toFixed(2)} available`
+        )
+      }
+
+      // FIFO deduction
+      let remaining = ing.qty
+      let totalCostUsed = 0
       for (const batch of batches) {
         if (remaining <= 0) break
         const deduct = Math.min(remaining, batch.remainingQty)
@@ -90,21 +93,24 @@ export class FeedFormulaService {
           data: { remainingQty: { decrement: deduct } },
         })
       }
+
       // Record stock out
       await this.prisma.stockOut.create({
         data: {
           id: randomUUID(),
           date: new Date(dto.date),
-          qty: ing.qtyPerUnit * dto.qtyProduced,
+          qty: ing.qty,
           costUsed: totalCostUsed,
           reason: `Feed production — ${formula.name} batch ${dto.batchNo}`,
           stockId: ing.stockId,
           farmId: dto.farmId,
         },
       })
+
+      batchIngredientData.push({ stockId: ing.stockId, qty: ing.qty, costUsed: totalCostUsed })
     }
 
-    // Create the feed batch
+    // Create the feed batch with ingredient breakdown
     return this.prisma.feedBatch.create({
       data: {
         id: randomUUID(),
@@ -115,8 +121,19 @@ export class FeedFormulaService {
         qtyRemaining: dto.qtyProduced,
         notes: dto.notes,
         farmId: dto.farmId,
+        ingredients: {
+          create: batchIngredientData.map(i => ({
+            id: randomUUID(),
+            stockId: i.stockId,
+            qty: i.qty,
+            costUsed: i.costUsed,
+          })),
+        },
       },
-      include: { formula: { select: { name: true, unit: true } } },
+      include: {
+        formula: { select: { name: true, unit: true } },
+        ingredients: { include: { stock: { select: { name: true, unit: true } } } },
+      },
     })
   }
 
@@ -125,6 +142,7 @@ export class FeedFormulaService {
       where: { farmId },
       include: {
         formula: { select: { name: true, unit: true } },
+        ingredients: { include: { stock: { select: { name: true, unit: true } } } },
         _count: { select: { usages: true } },
       },
       orderBy: { date: 'desc' },
@@ -137,9 +155,7 @@ export class FeedFormulaService {
     const batch = await this.prisma.feedBatch.findUnique({ where: { id: dto.batchId } })
     if (!batch) throw new NotFoundException('Batch not found')
     if (batch.qtyRemaining < dto.qty) {
-      throw new BadRequestException(
-        `Only ${batch.qtyRemaining} remaining in this batch`
-      )
+      throw new BadRequestException(`Only ${batch.qtyRemaining} remaining in this batch`)
     }
 
     const usage = await this.prisma.feedUsage.create({

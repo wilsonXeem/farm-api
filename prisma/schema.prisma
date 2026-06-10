@@ -46,14 +46,17 @@ model User {
 }
 
 model Farm {
-  id         String       @id @default(uuid())
-  name       String
-  location   String?
-  totalBirds Int          @default(500)
-  priceJumbo Float        @default(0)
-  priceMedium Float       @default(0)
-  priceTable Float        @default(0)
-  createdAt  DateTime     @default(now())
+  id          String       @id @default(uuid())
+  name        String
+  location    String?
+  totalBirds  Int          @default(500)
+  priceJumbo  Float        @default(0)
+  priceMedium Float        @default(0)
+  priceTable  Float        @default(0)
+  bankName    String       @default("")
+  bankAccount String       @default("")
+  bankAccountName String   @default("")
+  createdAt   DateTime     @default(now())
   users      User[]
   pens       Pen[]
   production Production[]
@@ -184,6 +187,7 @@ model Stock {
   batches   StockBatch[]
   stockOuts StockOut[]
   formulaIngredients FeedFormulaIngredient[]
+  batchIngredients   FeedBatchIngredient[]
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 }
@@ -300,23 +304,34 @@ model FeedFormulaIngredient {
   formula    FeedFormula @relation(fields: [formulaId], references: [id], onDelete: Cascade)
   stockId    String
   stock      Stock       @relation(fields: [stockId], references: [id], onDelete: Cascade)
-  qtyPerUnit Float
   createdAt  DateTime    @default(now())
 }
 
+model FeedBatchIngredient {
+  id        String     @id @default(uuid())
+  batchId   String
+  batch     FeedBatch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  stockId   String
+  stock     Stock      @relation(fields: [stockId], references: [id])
+  qty       Float
+  costUsed  Float      @default(0)
+  createdAt DateTime   @default(now())
+}
+
 model FeedBatch {
-  id           String      @id @default(uuid())
+  id           String               @id @default(uuid())
   date         DateTime
   batchNo      String
   formulaId    String
-  formula      FeedFormula @relation(fields: [formulaId], references: [id], onDelete: Cascade)
+  formula      FeedFormula          @relation(fields: [formulaId], references: [id], onDelete: Cascade)
   qtyProduced  Float
   qtyRemaining Float
   notes        String?
   farmId       String
-  farm         Farm        @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  farm         Farm                 @relation(fields: [farmId], references: [id], onDelete: Cascade)
   usages       FeedUsage[]
-  createdAt    DateTime    @default(now())
+  ingredients  FeedBatchIngredient[]
+  createdAt    DateTime             @default(now())
 }
 
 model FeedUsage {
