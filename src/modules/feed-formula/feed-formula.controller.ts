@@ -16,10 +16,12 @@ export class FeedFormulaController {
   // Batches
   @Post('batches') produceBatch(@Body() dto: ProduceBatchDto) { return this.svc.produceBatch(dto) }
   @Get('batches') findBatches(@Query('farmId') farmId: string) { return this.svc.findAllBatches(farmId) }
+  @Delete('batches/:id') deleteBatch(@Param('id') id: string) { return this.svc.deleteBatch(id) }
 
   // Usage
   @Post('usage') recordUsage(@Body() dto: RecordUsageDto) { return this.svc.recordUsage(dto) }
   @Get('usage') findUsages(@Query('farmId') farmId: string, @Query('batchId') batchId?: string) {
     return this.svc.findAllUsages(farmId, batchId)
   }
+  @Delete('usage/:id') deleteUsage(@Param('id') id: string) { return this.svc.deleteUsage(id) }
 }

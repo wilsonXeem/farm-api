@@ -149,6 +149,32 @@ export class FeedFormulaService {
     })
   }
 
+  async deleteBatch(id: string) {
+    const batch = await this.prisma.feedBatch.findUnique({
+      where: { id },
+      include: { ingredients: true },
+    })
+    if (!batch) throw new NotFoundException('Batch not found')
+    // Restore stock for each ingredient via FIFO reversal (add back to latest batch)
+    for (const ing of batch.ingredients) {
+      const latestBatch = await this.prisma.stockBatch.findFirst({
+        where: { stockId: ing.stockId },
+        orderBy: { date: 'desc' },
+      })
+      if (latestBatch) {
+        await this.prisma.stockBatch.update({
+          where: { id: latestBatch.id },
+          data: { remainingQty: { increment: ing.qty } },
+        })
+      }
+      // Remove related stock out record
+      await this.prisma.stockOut.deleteMany({
+        where: { stockId: ing.stockId, reason: { contains: batch.batchNo } },
+      })
+    }
+    return this.prisma.feedBatch.delete({ where: { id } })
+  }
+
   // ── Usage ─────────────────────────────────────────────────────
 
   async recordUsage(dto: RecordUsageDto) {
@@ -191,5 +217,16 @@ export class FeedFormulaService {
       },
       orderBy: { createdAt: 'desc' },
     })
+  }
+
+  async deleteUsage(id: string) {
+    const usage = await this.prisma.feedUsage.findUnique({ where: { id } })
+    if (!usage) throw new NotFoundException('Usage not found')
+    // Restore qty back to the batch
+    await this.prisma.feedBatch.update({
+      where: { id: usage.batchId },
+      data: { qtyRemaining: { increment: usage.qty } },
+    })
+    return this.prisma.feedUsage.delete({ where: { id } })
   }
 }
