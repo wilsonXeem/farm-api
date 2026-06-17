@@ -46,107 +46,112 @@ model User {
 }
 
 model Farm {
-  id          String       @id @default(uuid())
-  name        String
-  location    String?
-  totalBirds  Int          @default(500)
-  priceJumbo  Float        @default(0)
-  priceMedium Float        @default(0)
-  priceTable  Float        @default(0)
-  bankName    String       @default("")
-  bankAccount String       @default("")
-  bankAccountName String   @default("")
-  createdAt   DateTime     @default(now())
-  users      User[]
-  pens       Pen[]
-  production Production[]
-  mortality  Mortality[]
-  inventory  Inventory[]
-  feed       Feed[]
-  stockMovements StockMovement[]
-  stock      Stock[]
-  stockBatches StockBatch[]
-  stockOuts  StockOut[]
-  feedFormulas FeedFormula[]
-  feedBatches  FeedBatch[]
-  feedUsages   FeedUsage[]
-  expenses   Expense[]
-  sales      Sale[]
-  otherSales OtherSale[]
-  workers    Worker[]
-  payroll    Payroll[]
-  birdEntries BirdEntry[]
+  id              String       @id @default(uuid())
+  name            String
+  location        String?
+  totalBirds      Int          @default(500)
+  priceJumbo      Float        @default(0)
+  priceMedium     Float        @default(0)
+  priceTable      Float        @default(0)
+  bankName        String       @default("")
+  bankAccount     String       @default("")
+  bankAccountName String       @default("")
+  createdAt       DateTime     @default(now())
+  users           User[]
+  pens            Pen[]
+  production      Production[]
+  mortality       Mortality[]
+  inventory       Inventory[]
+  feed            Feed[]
+  stockMovements  StockMovement[]
+  stock           Stock[]
+  stockBatches    StockBatch[]
+  stockOuts       StockOut[]
+  feedFormulas    FeedFormula[]
+  feedBatches     FeedBatch[]
+  feedUsages      FeedUsage[]
+  expenses        Expense[]
+  sales           Sale[]
+  otherSales      OtherSale[]
+  workers         Worker[]
+  payroll         Payroll[]
+  birdEntries     BirdEntry[]
 }
 
 model Pen {
-  id         String       @id @default(uuid())
-  name       String
-  totalBirds Int          @default(100)
-  farmId     String
-  farm       Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  workerId   String?
-  worker     Worker?      @relation(fields: [workerId], references: [id])
-  production Production[]
-  mortality  Mortality[]
+  id          String       @id @default(uuid())
+  name        String
+  totalBirds  Int          @default(100)
+  farmId      String
+  farm        Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  workerId    String?
+  worker      Worker?      @relation(fields: [workerId], references: [id])
+  production  Production[]
+  mortality   Mortality[]
   birdEntries BirdEntry[]
-  otherSales OtherSale[]
-  stockOuts  StockOut[]
-  feedUsages FeedUsage[]
-  createdAt  DateTime     @default(now())
+  otherSales  OtherSale[]
+  stockOuts   StockOut[]
+  feedUsages  FeedUsage[]
+  createdAt   DateTime     @default(now())
+  deletedAt   DateTime?
 }
 
 model BirdEntry {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   date      DateTime
   count     Int
   notes     String?
   penId     String
-  pen       Pen      @relation(fields: [penId], references: [id], onDelete: Cascade)
+  pen       Pen       @relation(fields: [penId], references: [id], onDelete: Cascade)
   farmId    String
-  farm      Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  farm      Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
 }
 
 model Production {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   date        DateTime
   totalEggs   Int
-  crackedEggs Int      @default(0)
-  spoiltEggs  Int      @default(0)
+  crackedEggs Int       @default(0)
+  spoiltEggs  Int       @default(0)
   goodEggs    Int
   notes       String?
   farmId      String
-  farm        Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  farm        Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
   penId       String?
-  pen         Pen?     @relation(fields: [penId], references: [id])
-  createdAt   DateTime @default(now())
+  pen         Pen?      @relation(fields: [penId], references: [id])
+  createdAt   DateTime  @default(now())
+  deletedAt   DateTime?
 }
 
 model Mortality {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   date      DateTime
   count     Int
   cause     String?
   notes     String?
   farmId    String
-  farm      Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  farm      Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
   penId     String?
-  pen       Pen?     @relation(fields: [penId], references: [id])
-  createdAt DateTime @default(now())
+  pen       Pen?      @relation(fields: [penId], references: [id])
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
 }
 
 model Inventory {
-  id             String           @id @default(uuid())
-  item           String
-  qty            Float
-  unit           String
-  unitPrice      Float
-  minQty         Float            @default(0)
-  supplier       String?
-  farmId         String
-  farm           Farm             @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  movements      StockMovement[]
-  createdAt      DateTime         @default(now())
+  id        String          @id @default(uuid())
+  item      String
+  qty       Float
+  unit      String
+  unitPrice Float
+  minQty    Float           @default(0)
+  supplier  String?
+  farmId    String
+  farm      Farm            @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  movements StockMovement[]
+  createdAt DateTime        @default(now())
+  deletedAt DateTime?
 }
 
 enum MovementType {
@@ -155,16 +160,16 @@ enum MovementType {
 }
 
 model StockMovement {
-  id          String        @id @default(uuid())
+  id          String       @id @default(uuid())
   date        DateTime
   type        MovementType
   qty         Float
   reason      String?
   inventoryId String
-  inventory   Inventory     @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  inventory   Inventory    @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
   farmId      String
-  farm        Farm          @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  createdAt   DateTime      @default(now())
+  farm        Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  createdAt   DateTime     @default(now())
 }
 
 enum StockCategory {
@@ -176,20 +181,21 @@ enum StockCategory {
 }
 
 model Stock {
-  id        String         @id @default(uuid())
-  name      String
-  category  StockCategory  @default(FEED)
-  unit      String
-  minQty    Float          @default(0)
-  supplier  String?
-  farmId    String
-  farm      Farm           @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  batches   StockBatch[]
-  stockOuts StockOut[]
+  id                 String                  @id @default(uuid())
+  name               String
+  category           StockCategory           @default(FEED)
+  unit               String
+  minQty             Float                   @default(0)
+  supplier           String?
+  farmId             String
+  farm               Farm                    @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  batches            StockBatch[]
+  stockOuts          StockOut[]
   formulaIngredients FeedFormulaIngredient[]
   batchIngredients   FeedBatchIngredient[]
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  deletedAt          DateTime?
 }
 
 model StockBatch {
@@ -206,6 +212,7 @@ model StockBatch {
   farmId       String
   farm         Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
   createdAt    DateTime  @default(now())
+  deletedAt    DateTime?
 }
 
 model StockOut {
@@ -221,10 +228,11 @@ model StockOut {
   farmId    String
   farm      Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
   createdAt DateTime  @default(now())
+  deletedAt DateTime?
 }
 
 model Feed {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   date      DateTime
   item      String
   qty       Float
@@ -232,8 +240,9 @@ model Feed {
   totalCost Float
   supplier  String?
   farmId    String
-  farm      Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  farm      Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
 }
 
 model Expense {
@@ -246,6 +255,7 @@ model Expense {
   farmId      String
   farm        Farm            @relation(fields: [farmId], references: [id], onDelete: Cascade)
   createdAt   DateTime        @default(now())
+  deletedAt   DateTime?
 }
 
 enum EggSize {
@@ -266,6 +276,7 @@ model Sale {
   farmId        String
   farm          Farm          @relation(fields: [farmId], references: [id], onDelete: Cascade)
   createdAt     DateTime      @default(now())
+  deletedAt     DateTime?
 }
 
 model OtherSale {
@@ -283,6 +294,7 @@ model OtherSale {
   farmId    String
   farm      Farm          @relation(fields: [farmId], references: [id], onDelete: Cascade)
   createdAt DateTime      @default(now())
+  deletedAt DateTime?
 }
 
 model FeedFormula {
@@ -296,26 +308,27 @@ model FeedFormula {
   batches     FeedBatch[]
   createdAt   DateTime                @default(now())
   updatedAt   DateTime                @updatedAt
+  deletedAt   DateTime?
 }
 
 model FeedFormulaIngredient {
-  id         String      @id @default(uuid())
-  formulaId  String
-  formula    FeedFormula @relation(fields: [formulaId], references: [id], onDelete: Cascade)
-  stockId    String
-  stock      Stock       @relation(fields: [stockId], references: [id], onDelete: Cascade)
-  createdAt  DateTime    @default(now())
+  id        String      @id @default(uuid())
+  formulaId String
+  formula   FeedFormula @relation(fields: [formulaId], references: [id], onDelete: Cascade)
+  stockId   String
+  stock     Stock       @relation(fields: [stockId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
 }
 
 model FeedBatchIngredient {
-  id        String     @id @default(uuid())
+  id        String    @id @default(uuid())
   batchId   String
-  batch     FeedBatch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  batch     FeedBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
   stockId   String
-  stock     Stock      @relation(fields: [stockId], references: [id])
+  stock     Stock     @relation(fields: [stockId], references: [id])
   qty       Float
-  costUsed  Float      @default(0)
-  createdAt DateTime   @default(now())
+  costUsed  Float     @default(0)
+  createdAt DateTime  @default(now())
 }
 
 model FeedBatch {
@@ -332,6 +345,7 @@ model FeedBatch {
   usages       FeedUsage[]
   ingredients  FeedBatchIngredient[]
   createdAt    DateTime             @default(now())
+  deletedAt    DateTime?
 }
 
 model FeedUsage {
@@ -346,6 +360,7 @@ model FeedUsage {
   farmId    String
   farm      Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
   createdAt DateTime  @default(now())
+  deletedAt DateTime?
 }
 
 model Worker {
@@ -362,16 +377,18 @@ model Worker {
   payroll      Payroll[]
   user         User?
   createdAt    DateTime  @default(now())
+  deletedAt    DateTime?
 }
 
 model Payroll {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   workerId  String
-  worker    Worker   @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  worker    Worker    @relation(fields: [workerId], references: [id], onDelete: Cascade)
   amount    Float
   month     String
   date      DateTime
   farmId    String
-  farm      Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  farm      Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
 }

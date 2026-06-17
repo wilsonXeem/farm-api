@@ -11,7 +11,7 @@ export class WorkersService {
   }
 
   findAll(farmId: string) {
-    return this.prisma.worker.findMany({ where: { farmId }, orderBy: { name: 'asc' } })
+    return this.prisma.worker.findMany({ where: { farmId, deletedAt: null }, orderBy: { name: 'asc' } })
   }
 
   async update(id: string, dto: UpdateWorkerDto) {
@@ -23,6 +23,6 @@ export class WorkersService {
   async remove(id: string) {
     const rec = await this.prisma.worker.findUnique({ where: { id } })
     if (!rec) throw new NotFoundException()
-    return this.prisma.worker.delete({ where: { id } })
+    return this.prisma.worker.update({ where: { id }, data: { deletedAt: new Date() } })
   }
 }

@@ -11,12 +11,12 @@ export class FeedService {
   }
 
   findAll(farmId: string) {
-    return this.prisma.feed.findMany({ where: { farmId }, orderBy: { date: 'desc' } })
+    return this.prisma.feed.findMany({ where: { farmId, deletedAt: null }, orderBy: { date: 'desc' } })
   }
 
   async remove(id: string) {
     const rec = await this.prisma.feed.findUnique({ where: { id } })
     if (!rec) throw new NotFoundException()
-    return this.prisma.feed.delete({ where: { id } })
+    return this.prisma.feed.update({ where: { id }, data: { deletedAt: new Date() } })
   }
 }

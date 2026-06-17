@@ -32,7 +32,7 @@ export class FeedFormulaService {
 
   findAllFormulas(farmId: string) {
     return this.prisma.feedFormula.findMany({
-      where: { farmId },
+      where: { farmId, deletedAt: null },
       include: {
         ingredients: { include: { stock: { select: { id: true, name: true, unit: true } } } },
         _count: { select: { batches: true } },
@@ -44,7 +44,7 @@ export class FeedFormulaService {
   async deleteFormula(id: string) {
     const f = await this.prisma.feedFormula.findUnique({ where: { id } })
     if (!f) throw new NotFoundException()
-    return this.prisma.feedFormula.delete({ where: { id } })
+    return this.prisma.feedFormula.update({ where: { id }, data: { deletedAt: new Date() } })
   }
 
   // ── Batches ───────────────────────────────────────────────────
@@ -139,7 +139,7 @@ export class FeedFormulaService {
 
   findAllBatches(farmId: string) {
     return this.prisma.feedBatch.findMany({
-      where: { farmId },
+      where: { farmId, deletedAt: null },
       include: {
         formula: { select: { name: true, unit: true } },
         ingredients: { include: { stock: { select: { name: true, unit: true } } } },
@@ -155,7 +155,6 @@ export class FeedFormulaService {
       include: { ingredients: true },
     })
     if (!batch) throw new NotFoundException('Batch not found')
-    // Restore stock for each ingredient via FIFO reversal (add back to latest batch)
     for (const ing of batch.ingredients) {
       const latestBatch = await this.prisma.stockBatch.findFirst({
         where: { stockId: ing.stockId },
@@ -167,12 +166,12 @@ export class FeedFormulaService {
           data: { remainingQty: { increment: ing.qty } },
         })
       }
-      // Remove related stock out record
-      await this.prisma.stockOut.deleteMany({
+      await this.prisma.stockOut.updateMany({
         where: { stockId: ing.stockId, reason: { contains: batch.batchNo } },
+        data: { deletedAt: new Date() },
       })
     }
-    return this.prisma.feedBatch.delete({ where: { id } })
+    return this.prisma.feedBatch.update({ where: { id }, data: { deletedAt: new Date() } })
   }
 
   // ── Usage ─────────────────────────────────────────────────────
@@ -210,7 +209,7 @@ export class FeedFormulaService {
 
   findAllUsages(farmId: string, batchId?: string) {
     return this.prisma.feedUsage.findMany({
-      where: { farmId, ...(batchId ? { batchId } : {}) },
+      where: { farmId, deletedAt: null, ...(batchId ? { batchId } : {}) },
       include: {
         batch: { include: { formula: { select: { name: true, unit: true } } } },
         pen: { select: { name: true } },
@@ -222,11 +221,10 @@ export class FeedFormulaService {
   async deleteUsage(id: string) {
     const usage = await this.prisma.feedUsage.findUnique({ where: { id } })
     if (!usage) throw new NotFoundException('Usage not found')
-    // Restore qty back to the batch
     await this.prisma.feedBatch.update({
       where: { id: usage.batchId },
       data: { qtyRemaining: { increment: usage.qty } },
     })
-    return this.prisma.feedUsage.delete({ where: { id } })
+    return this.prisma.feedUsage.update({ where: { id }, data: { deletedAt: new Date() } })
   }
 }

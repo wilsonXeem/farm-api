@@ -25,16 +25,15 @@ export class ProductionService {
   }
 
   async findAll(farmId: string, penId?: string, workerId?: string) {
-    // If workerId provided (staff role), scope to their pens only
     let penIds: string[] | undefined
     if (workerId) {
       const pens = await this.prisma.pen.findMany({ where: { workerId }, select: { id: true } })
       penIds = pens.map(p => p.id)
     }
-
     return this.prisma.production.findMany({
       where: {
         farmId,
+        deletedAt: null,
         ...(penId ? { penId } : {}),
         ...(penIds ? { penId: { in: penIds } } : {}),
       },
@@ -46,6 +45,6 @@ export class ProductionService {
   async remove(id: string) {
     const rec = await this.prisma.production.findUnique({ where: { id } })
     if (!rec) throw new NotFoundException()
-    return this.prisma.production.delete({ where: { id } })
+    return this.prisma.production.update({ where: { id }, data: { deletedAt: new Date() } })
   }
 }

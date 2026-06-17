@@ -19,10 +19,10 @@ export class MortalityService {
       const pens = await this.prisma.pen.findMany({ where: { workerId }, select: { id: true } })
       penIds = pens.map(p => p.id)
     }
-
     return this.prisma.mortality.findMany({
       where: {
         farmId,
+        deletedAt: null,
         ...(penId ? { penId } : {}),
         ...(penIds ? { penId: { in: penIds } } : {}),
       },
@@ -34,6 +34,6 @@ export class MortalityService {
   async remove(id: string) {
     const rec = await this.prisma.mortality.findUnique({ where: { id } })
     if (!rec) throw new NotFoundException()
-    return this.prisma.mortality.delete({ where: { id } })
+    return this.prisma.mortality.update({ where: { id }, data: { deletedAt: new Date() } })
   }
 }

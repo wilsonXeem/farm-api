@@ -22,7 +22,7 @@ export class OtherSalesService {
 
   findAll(farmId: string) {
     return this.prisma.otherSale.findMany({
-      where: { farmId },
+      where: { farmId, deletedAt: null },
       include: { pen: { select: { id: true, name: true } } },
       orderBy: { date: 'desc' },
     })
@@ -31,13 +31,12 @@ export class OtherSalesService {
   async remove(id: string) {
     const rec = await this.prisma.otherSale.findUnique({ where: { id } })
     if (!rec) throw new NotFoundException()
-    // Restore bird count if reversing a hen sale
     if (rec.item === 'Hens' && rec.penId) {
       await this.prisma.pen.update({
         where: { id: rec.penId },
         data: { totalBirds: { increment: Math.floor(rec.qty) } },
       })
     }
-    return this.prisma.otherSale.delete({ where: { id } })
+    return this.prisma.otherSale.update({ where: { id }, data: { deletedAt: new Date() } })
   }
 }

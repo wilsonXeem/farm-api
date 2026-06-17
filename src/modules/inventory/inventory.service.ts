@@ -13,7 +13,7 @@ export class InventoryService {
 
   findAll(farmId: string) {
     return this.prisma.inventory.findMany({
-      where: { farmId },
+      where: { farmId, deletedAt: null },
       orderBy: { item: 'asc' },
     })
   }
@@ -27,7 +27,7 @@ export class InventoryService {
   async remove(id: string) {
     const rec = await this.prisma.inventory.findUnique({ where: { id } })
     if (!rec) throw new NotFoundException()
-    return this.prisma.inventory.delete({ where: { id } })
+    return this.prisma.inventory.update({ where: { id }, data: { deletedAt: new Date() } })
   }
 
   // Stock In — add quantity

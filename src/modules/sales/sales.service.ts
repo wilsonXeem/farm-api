@@ -11,7 +11,7 @@ export class SalesService {
   }
 
   findAll(farmId: string) {
-    return this.prisma.sale.findMany({ where: { farmId }, orderBy: { date: 'desc' } })
+    return this.prisma.sale.findMany({ where: { farmId, deletedAt: null }, orderBy: { date: 'desc' } })
   }
 
   async updateStatus(id: string, dto: UpdateSaleStatusDto) {
@@ -23,6 +23,6 @@ export class SalesService {
   async remove(id: string) {
     const rec = await this.prisma.sale.findUnique({ where: { id } })
     if (!rec) throw new NotFoundException()
-    return this.prisma.sale.delete({ where: { id } })
+    return this.prisma.sale.update({ where: { id }, data: { deletedAt: new Date() } })
   }
 }

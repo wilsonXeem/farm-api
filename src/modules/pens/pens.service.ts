@@ -15,7 +15,7 @@ export class PensService {
 
   findAll(farmId: string) {
     return this.prisma.pen.findMany({
-      where: { farmId },
+      where: { farmId, deletedAt: null },
       include: {
         worker: { select: { id: true, name: true, role: true } },
         _count: { select: { production: true, mortality: true } },
@@ -26,7 +26,7 @@ export class PensService {
 
   findByWorker(workerId: string) {
     return this.prisma.pen.findMany({
-      where: { workerId },
+      where: { workerId, deletedAt: null },
       include: { worker: { select: { id: true, name: true, role: true } } },
     })
   }
@@ -44,7 +44,7 @@ export class PensService {
   async remove(id: string) {
     const pen = await this.prisma.pen.findUnique({ where: { id } })
     if (!pen) throw new NotFoundException('Pen not found')
-    return this.prisma.pen.delete({ where: { id } })
+    return this.prisma.pen.update({ where: { id }, data: { deletedAt: new Date() } })
   }
 
   // ── Bird entries ──────────────────────────────────────────────
@@ -65,14 +65,14 @@ export class PensService {
 
   getBirdEntries(penId: string) {
     return this.prisma.birdEntry.findMany({
-      where: { penId },
+      where: { penId, deletedAt: null },
       orderBy: { date: 'desc' },
     })
   }
 
   getAllBirdEntries(farmId: string) {
     return this.prisma.birdEntry.findMany({
-      where: { farmId },
+      where: { farmId, deletedAt: null },
       include: { pen: { select: { name: true } } },
       orderBy: { date: 'desc' },
     })

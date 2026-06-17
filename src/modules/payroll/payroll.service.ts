@@ -8,7 +8,7 @@ export class PayrollService {
 
   async create(dto: CreatePayrollDto) {
     const already = await this.prisma.payroll.findFirst({
-      where: { workerId: dto.workerId, month: dto.month },
+      where: { workerId: dto.workerId, month: dto.month, deletedAt: null },
     })
     if (already) throw new ConflictException('Worker already paid for this month')
     return this.prisma.payroll.create({ data: { ...dto, date: new Date(dto.date) } })
@@ -16,7 +16,7 @@ export class PayrollService {
 
   findAll(farmId: string) {
     return this.prisma.payroll.findMany({
-      where: { farmId },
+      where: { farmId, deletedAt: null },
       include: { worker: { select: { name: true, role: true } } },
       orderBy: { date: 'desc' },
     })
@@ -25,6 +25,6 @@ export class PayrollService {
   async remove(id: string) {
     const rec = await this.prisma.payroll.findUnique({ where: { id } })
     if (!rec) throw new NotFoundException()
-    return this.prisma.payroll.delete({ where: { id } })
+    return this.prisma.payroll.update({ where: { id }, data: { deletedAt: new Date() } })
   }
 }

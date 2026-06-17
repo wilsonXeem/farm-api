@@ -11,12 +11,12 @@ export class ExpensesService {
   }
 
   findAll(farmId: string) {
-    return this.prisma.expense.findMany({ where: { farmId }, orderBy: { date: 'desc' } })
+    return this.prisma.expense.findMany({ where: { farmId, deletedAt: null }, orderBy: { date: 'desc' } })
   }
 
   async remove(id: string) {
     const rec = await this.prisma.expense.findUnique({ where: { id } })
     if (!rec) throw new NotFoundException()
-    return this.prisma.expense.delete({ where: { id } })
+    return this.prisma.expense.update({ where: { id }, data: { deletedAt: new Date() } })
   }
 }
