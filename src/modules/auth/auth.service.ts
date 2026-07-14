@@ -2,7 +2,8 @@ import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/co
 import { JwtService } from '@nestjs/jwt'
 import * as bcrypt from 'bcryptjs'
 import { PrismaService } from '../../prisma/prisma.service'
-import { RegisterDto, LoginDto } from './auth.dto'
+import { RegisterDto, LoginDto, ChangePasswordDto } from './auth.dto'
+
 @Injectable()
 export class AuthService {
   constructor(private prisma: PrismaService, private jwt: JwtService) {}
@@ -28,15 +29,36 @@ export class AuthService {
   async me(userId: string) {
     return this.prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, name: true, email: true, role: true, farmId: true, workerId: true, createdAt: true },
+      select: { id: true, name: true, email: true, role: true, farmId: true, workerId: true, hasChangedPassword: true, createdAt: true },
     })
   }
 
-  private sign(user: { id: string; name: string; email: string; role: string; farmId: string | null; workerId?: string | null }) {
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } })
+    if (!user) throw new UnauthorizedException('User not found')
+    const valid = await bcrypt.compare(dto.currentPassword, user.password)
+    if (!valid) throw new UnauthorizedException('Current password is incorrect')
+    const hashed = await bcrypt.hash(dto.newPassword, 10)
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: { password: hashed, hasChangedPassword: true },
+    })
+    return this.sign(updated)
+  }
+
+  private sign(user: { id: string; name: string; email: string; role: string; farmId: string | null; workerId?: string | null; hasChangedPassword: boolean }) {
     const payload = { sub: user.id, email: user.email, role: user.role, farmId: user.farmId, workerId: user.workerId ?? null }
     return {
       access_token: this.jwt.sign(payload),
-      user: { id: user.id, name: user.name, email: user.email, role: user.role, farmId: user.farmId, workerId: user.workerId ?? null },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        farmId: user.farmId,
+        workerId: user.workerId ?? null,
+        hasChangedPassword: user.hasChangedPassword,
+      },
     }
   }
 }

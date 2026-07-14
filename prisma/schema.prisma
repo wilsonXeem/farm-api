@@ -33,16 +33,17 @@ enum ExpenseCategory {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(STAFF)
-  farmId    String?
-  farm      Farm?    @relation(fields: [farmId], references: [id])
-  workerId  String?  @unique
-  worker    Worker?  @relation(fields: [workerId], references: [id])
-  createdAt DateTime @default(now())
+  id                 String   @id @default(uuid())
+  name               String
+  email              String   @unique
+  password           String
+  role               Role     @default(STAFF)
+  hasChangedPassword Boolean  @default(false)
+  farmId             String?
+  farm               Farm?    @relation(fields: [farmId], references: [id])
+  workerId           String?  @unique
+  worker             Worker?  @relation(fields: [workerId], references: [id])
+  createdAt          DateTime @default(now())
 }
 
 model Farm {
